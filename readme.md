@@ -1,0 +1,29 @@
+# othello
+
+> My flawless app
+
+
+## Dev
+
+```
+$ npm install
+```
+
+### Run
+
+```
+$ npm start
+```
+
+### Build
+
+```
+$ npm run build
+```
+
+Builds the app for OS X, Linux, and Windows, using [electron-packager](https://github.com/maxogden/electron-packager).
+
+
+## License
+
+MIT © [Guillermo Peralta](http://pol.una.py)

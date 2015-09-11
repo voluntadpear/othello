@@ -1,0 +1,47 @@
+{
+  "name": "othello",
+  "productName": "Othello",
+  "version": "0.0.0",
+  "description": "My flawless app",
+  "license": "MIT",
+  "repository": "voluntadpear/othello",
+  "author": {
+    "name": "Guillermo Peralta",
+    "email": "gperaltascura@gmail.com",
+    "url": "pol.una.py"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "xo",
+    "start": "electron .",
+    "build": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --asar --all --version=0.31.1"
+  },
+  "files": [
+    "index.js",
+    "index.html",
+    "index.css"
+  ],
+  "keywords": [
+    "electron-app"
+  ],
+  "dependencies": {
+    "electron-debug": "^0.1.1"
+  },
+  "devDependencies": {
+    "electron-packager": "^5.0.0",
+    "electron-prebuilt": "^0.31.1",
+    "xo": "^0.7.1"
+  },
+  "xo": {
+    "esnext": true,
+    "envs": [
+      "node",
+      "browser"
+    ],
+    "rules": {
+      "prefer-arrow-callback": 0
+    }
+  }
+}
