@@ -14,11 +14,12 @@ let mainWindow;
 function createMainWindow() {
 	const win = new BrowserWindow({
 		width: 600,
-		height: 400,
-		resizable: false
+		height: 800,
+		resizable: true
 	});
 
-	win.loadUrl(`file://${__dirname}/index.html`);
+	//win.loadUrl(`file://${__dirname}/index.html`);
+	win.loadUrl(`file://${__dirname}/reversijs/index.html`);
 	win.on('closed', onClosed);
 
 	return win;
