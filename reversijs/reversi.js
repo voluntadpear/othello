@@ -40,15 +40,7 @@ function drawtext(board) {
     .attr('title', 'click to play as ' + color(board.computeris));
   $('#' + color(-board.computeris) + 'computer').css({visibility: 'hidden'});
   $('#' + color(board.computeris) + 'computer').css({visibility: 'visible'});
-  if (undo.length) {
-    $('#undo').removeAttr('disabled');
-  } else {
-    $('#undo').attr('disabled', true);
-  }
-  if (redo.length) {
-    $('#pass').attr('value', 'Redo');
-    $('#pass').removeAttr('disabled');
-  } else if (counts[0] == 0 || counts[1] == 0 || counts[2] == 0) {
+  if (counts[0] == 0 || counts[1] == 0 || counts[2] == 0) {
     $('#pass').attr('value', 'Start');
     $('#pass').removeAttr('disabled');
   } else {
@@ -63,26 +55,12 @@ function drawtext(board) {
   }
 }
 
-// Called when the user chooses to switch to player p.
-// p=1 for white and p=-1 for black.
-function pickplayer(p) {
-  if (mainboard.computeris == -p) return;
-  undo.push(new board(mainboard));
-  redo.length = 0;
-  mainboard.computeris = -p;
-  drawtext(mainboard);
-  startai(mainboard);
-}
-
 // Called with coordinates (x,y) when the player clicks on a square.
 function doclick(c) {
   if (mainboard.computeris == mainboard.whosemove) return;
   var saved = new board(mainboard);
   if (mainboard.domove(c)) {
-    undo.push(saved);
-    redo.length = 0;
     drawall(mainboard);
-    startai(mainboard);
   }
 }
 
@@ -91,12 +69,8 @@ function doclick(c) {
 // new game.  The button only allows a pass when a pass is legal.
 function dopass() {
   var counts = mainboard.countsquares();
-  if (redo.length) {
-    doredo();
-  } else if (counts[0] == 0 || counts[1] == 0 || counts[2] == 0) {
+  if (counts[0] == 0 || counts[1] == 0 || counts[2] == 0) {
     var saved = new board(mainboard);
-    undo.push(saved);
-    redo.length = 0;
     mainboard = new board();
     drawall(mainboard);
     startai(mainboard);
@@ -104,102 +78,6 @@ function dopass() {
   } else {
     doclick([]);
   }
-}
-
-// When the user clicks "redo"
-function doredo() {
-  if (redo.length) {
-    undo.push(new board(mainboard));
-    mainboard = redo.pop();
-    log('redo to ' + undo.length);
-  }
-  drawall(mainboard);
-  startai(mainboard);
-}
-
-// When the user clicks "undo"
-function doundo() {
-  if (undo.length) {
-    redo.push(mainboard);
-    mainboard = undo.pop();
-    log('undo to ' + undo.length);
-  }
-  drawall(mainboard);
-  startai(mainboard);
-}
-
-
-// ----------------------------------------------------------------------
-// Background Processing AI Driver
-// ----------------------------------------------------------------------
-
-movetimer = null;   // After this fires, the computer moves immediately
-earlytimer = null;  // The computer will wait for this to fire before moving
-cycletimer = null;  // Each tick of this timer allows the AI to run a bit
-
-// Stops all background processing timers
-function stoptimers() {
-  clearTimeout(movetimer);
-  clearTimeout(earlytimer);
-  clearTimeout(cycletimer);
-  movetimer = null;
-  earlytimer = null;
-  cycletimer = null;
-}
-
-// Starts the ai working on the given board.  If it's the computer's move,
-// the movetimer and earlytimer are set, so that the search ends when
-// the right amount of time has elapsed.
-function startai(board) {
-  stoptimers();
-  ai.setboard(board);
-  if (board.whosemove == board.computeris) {
-    var remaining = mainboard.countsquares()[2];
-    var ms = 500 + (64 - remaining) * 150;
-    movetimer = setTimeout(finishai, ms);
-    earlytimer = setTimeout(earlyai, 1000);
-  }
-  cycletimer = setTimeout(advanceai, 1);
-}
-
-// Does one chunk of AI processing (twenty steps)
-function advanceai() {
-  if (!ai.advance(20)) {
-    if (earlytimer == null) {
-      finishai();
-    } else {
-      clearTimeout(movetimer);
-      movetimer = null;
-    }
-    return;
-  }
-  clearTimeout(cycletimer);
-  cycletimer = setTimeout(advanceai, 1);
-}
-
-// Called when the early (500ms) timer goes off.  If the AI is done,
-// then it triggers the move.
-function earlyai() {
-  if (movetimer == null) {
-    finishai();
-  } else {
-    clearTimeout(earlytimer);
-    earlytimer = null;
-  }
-}
-
-// Called when time is up and the computer needs to make a move.
-// Asks the ai what it thinks the best move so far is.
-function finishai() {
-  stoptimers();
-  if (mainboard.computeris != mainboard.whosemove) return;
-  if (!mainboard.domove(ai.bestmove())) {
-    log('Problem move: ' + ai.bestmove());
-    return;
-  }
-  log('Depth ' + ai.bestdepth() + ': ' + ai.bestmove());
-  drawall(mainboard);
-  startai(mainboard);
 }
 
 // ----------------------------------------------------------------------
@@ -457,214 +335,6 @@ board.prototype.countsquares = function countsquares() {
   return counts;
 }
 
-// ----------------------------------------------------------------------
-// AI SEARCH NODE OBJECT
-//
-// Represents one possible future state of the board.
-// ----------------------------------------------------------------------
-function node(b, d, m, a, f) {
-  this.move = m;
-  this.board = new board(b);
-  if (m !== null) this.board.domove(m);
-  this.depth = d;
-  var promote = (f != null && f.length > 0) ? f.shift() : null;
-  this.first = f;
-  this.childmoves = (d <= 0 ? [] : b.bestmoves(promote));
-  this.adverse = a;
-  this.best = (d == 0 ? this.board.score() : null);
-  this.bestseq = null;
-}
-
-// Called at the root of the search tree when the tree has been fully
-// explored, to continue the search with a new tree one level deeper.
-node.prototype.advancedepth = function advancedepth() {
-  this.depth += 1;
-  this.first = this.bestseq;
-  this.childmoves = this.board.bestmoves(this.first.shift());
-  this.best = null;
-}
-
-// Returns the next unprocessed child of the current node.
-node.prototype.nextchild = function nextchild() {
-  if (0 == this.childmoves.length) return null;
-  return new node(
-    this.board,
-    this.depth - 1,
-    this.childmoves.shift(),
-    this.best,
-    this.first);
-  this.first = null;
-}
-
-// True if the first score is better for the player whose move it is.
-node.prototype.better = function better(s1, s2) {
-  if (s1 === null) return false;
-  if (s2 === null) return true;
-  if (this.board.whosemove == 1) {
-    return s1 > s2;
-  } else {
-    return s1 < s2;
-  }
-}
-
-// When a child is done processing, the parent updates its knowledge
-// of the best-scored move.  If there is an adversarial move already
-// known that can force a lower score than our best score, then we
-// stop the search, because we can assume the adversary would have
-// already forced that move.
-node.prototype.finishchild = function finishchild(move, score, seq) {
-  if (this.better(score, this.best)) {
-    this.best = score;
-    this.bestseq = [move];
-    if (seq !== null) {
-      this.bestseq = this.bestseq.concat(seq);
-    }
-    if (this.adverse !== null && !this.better(this.adverse, score)) {
-      this.childmoves.length = 0;
-    }
-  }
-}
-
-// Returns true if the best moves discovered lead to stalemate.
-node.prototype.stalemate = function stalemate() {
-  if (this.bestseq == null || this.bestseq.length < 2) return false;
-  return this.bestseq[this.bestseq.length - 1].length == 0 &&
-         this.bestseq[this.bestseq.length - 2].length == 0;
-}
-
-// ----------------------------------------------------------------------
-// AI SEARCH STACK OBJECT
-//
-// Represents a whole search stack.
-// ----------------------------------------------------------------------
-function searchstack(board, choice) {
-  this.stack = [new node(board, 2, choice, null, null)];
-  this.bestmove = this.stack[0].childmoves[0];
-  this.bestdepth = 1;
-}
-
-// Advances the search by one step.
-searchstack.prototype.advance = function advance() {
-  if (this.stack.length == 0) return false;
-  var n = this.stack[this.stack.length - 1];
-  var c = n.nextchild();
-  if (c !== null) {
-    // If there is a new child to explore, push it on the stack.
-    this.stack.push(c);
-  } else {
-    // Done with children: this branch is done being explored.
-    this.stack.pop();
-    if (this.stack.length > 0) {
-      // Update the parent node with the best path from the children.
-      this.stack[this.stack.length - 1].finishchild(n.move, n.best, n.bestseq);
-    } else {
-      // Search is done at the root; record the result and increase depth.
-      this.bestmove = n.bestseq[0];
-      this.bestdepth = n.depth;
-      if (!n.stalemate() && n.best < 1000 && n.best > -1000) {
-        // If there is no winner yet, increase the depth and continue.
-        n.advancedepth();
-        this.stack.push(n);
-      } else {
-        // Otherwise, our search is done.
-        this.stack.push(n);
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-searchstack.prototype.getbestmove = function getbestmove() {
-  if (this.stack.length > 0 && this.stack[0].bestmove) {
-    return this.stack[0].bestmove;
-  } else {
-    return this.bestmove;
-  }
-}
-
-searchstack.prototype.sameas = function sameas(b) {
-  if (this.stack.length == 0) return false;
-  return this.stack[0].board.sameas(b);
-}
-
-// ----------------------------------------------------------------------
-// SEARCHSPACE OBJECT
-//
-// Can manage more than one search stack: used when the human player
-// is moving, to anticipate all possible responses.
-// ----------------------------------------------------------------------
-function searchspace() {
-  this.stacks = []
-  this.currentstack = 0;
-}
-
-// Loads a new board into the AI.  If the board matches the root of
-// an existing search, then the search is continued.
-searchspace.prototype.setboard = function setboard(board) {
-  if (board.whosemove == board.computeris) {
-    var newstack = null;
-    for (var j = 0; j < this.stacks.length; ++j) {
-      if (this.stacks[j].sameas(board)) {
-        newstack = this.stacks[j];
-        log('Starting at depth ' + newstack.bestdepth);
-        break;
-      }
-    }
-    if (newstack == null) {
-      newstack = new searchstack(board, null);
-    }
-    this.stacks = [ newstack ];
-  } else {
-    this.stacks = [ ];
-    var choices = board.bestmoves();
-    for (var j = 0; j < choices.length; ++j) {
-      this.stacks.push(new searchstack(board, choices[j]));
-    }
-  }
-  this.currentstack = 0;
-}
-
-searchspace.prototype.advance = function advance(iterations) {
-  if (this.stacks.length == 0) return false;
-  var finished = 0;
-  while (iterations > 0) {
-    var searchstack = this.stacks[this.currentstack++];
-    if (this.currentstack >= this.stacks.length) this.currentstack= 0;
-    while (iterations > 0) {
-      if (!searchstack.advance()) {
-        finished += 1;
-        break;
-      }
-      iterations -= 1;
-    }
-    if (finished >= this.stacks.length) return false;
-  }
-  return true;
-}
-
-searchspace.prototype.bestmove = function bestmove() {
-  if (this.stacks.length == 0) return [];
-  return this.stacks[0].getbestmove();
-}
-
-searchspace.prototype.bestdepth = function bestdepth() {
-  if (this.stacks.length == 0) return 0;
-  return this.stacks[0].bestdepth;
-}
-
-
-var undo = [];
-var redo = [];
 var mainboard = new board();
-var ai = new searchspace();
-
 drawall(mainboard);
-startai(mainboard);
-if (easy) log('Playing easy mode');
-if (playwhite) pickplayer(1);
-if (notext) $('.text').css('display', 'none');
-
-var browser = /Chrome|Safari|Opera|Firefox|MSIE/.exec(navigator.userAgent);
-if (browser == 'MSIE') browser = 'Internet Explorer';
-if (browser != null) document.getElementById('browsername').innerHTML = browser;
+doclick([5, 4]);
