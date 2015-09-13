@@ -13,8 +13,8 @@ let mainWindow;
 
 function createMainWindow() {
 	const win = new BrowserWindow({
-		width: 600,
-		height: 800,
+		width: 1080,
+		height: 1920,
 		resizable: true
 	});
 
