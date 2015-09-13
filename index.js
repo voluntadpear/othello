@@ -44,5 +44,6 @@ app.on('activate-with-no-open-windows', function () {
 });
 
 app.on('ready', function () {
+	console.log(process.type);
 	mainWindow = createMainWindow();
 });
