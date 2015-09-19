@@ -51,6 +51,8 @@
          <br>
          </div>
          </center>
+         <script src="scripts/gui.js"></script>
+         <script src="scripts/tablero.js"></script>
          <script src="scripts/reversi.js"></script>
 
 
@@ -72,30 +74,54 @@
                    aria-expanded="false" class="tiny round button dropdown">
                    Estrategia</button>
                    <ul id="drop1" data-dropdown-content class="f-dropdown" role="menu" aria-hidden="false" tabindex="-1">
-                     <li><a href="#">Humano</a></li>
-                     <li><a href="#">Estrategia Minimax</a></li>
-                     <li><a href="#">Estrategia Minimax con Poda Alfa Beta</a></li>
-                     <li><a href="#">Estrategia Aleatoria</a></li>
+                     <li><a href="#" onclick="seleccion(1, 0);">Humano</a></li>
+                     <li><a href="#" onclick="seleccion(1, 1);">Estrategia Minimax</a></li>
+                     <li><a href="#" onclick="seleccion(1, 2);">Estrategia Minimax con Poda Alfa Beta</a></li>
+                     <li><a href="#" onclick="seleccion(1, 3);">Estrategia Aleatoria</a></li>
                    </ul>
                  </div>
                </div>
+               <div id="limiteblock1">
                <label for="rango1" >Límite de nivel: <b><span id="limite1"> </span></b></label>
                    <div class="range-slider round" data-slider data-options="start: 1; end: 10; display_selector: #limite1;">
                     <span class="range-slider-handle" role="slider" tabindex="0"></span>
                     <span class="range-slider-active-segment"></span>
                    </div>
+                 </div>
              </div>
            </li>
            <br />
            <li class="accordion-navigation">
              <a href="#j2options">Jugador 2</a>
              <div id="j2options" class="content">
-               Opciones del jugador 2.
+               <div class="row">
+                 <div class="small-3 columns">
+                   <label for="estrategia2" class="inline">Estrategia:</label>
+                 </div>
+                 <div class="small-9 columns">
+                   <button id="estrategia2" data-dropdown="drop2" aria-controls="drop2"
+                   aria-expanded="false" class="tiny round button dropdown">
+                   Estrategia</button>
+                   <ul id="drop2" data-dropdown-content class="f-dropdown" role="menu" aria-hidden="false" tabindex="-1">
+                     <li><a href="#" onclick="seleccion(2, 0);">Humano</a></li>
+                     <li><a href="#" onclick="seleccion(2, 1);">Estrategia Minimax</a></li>
+                     <li><a href="#" onclick="seleccion(2, 2);">Estrategia Minimax con Poda Alfa Beta</a></li>
+                     <li><a href="#" onclick="seleccion(2, 3);">Estrategia Aleatoria</a></li>
+                   </ul>
+                 </div>
+               </div>
+               <div id="limiteblock2">
+               <label for="rango1" >Límite de nivel: <b><span id="limite2"> </span></b></label>
+                   <div class="range-slider round" data-slider data-options="start: 1; end: 10; display_selector: #limite2;">
+                    <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                    <span class="range-slider-active-segment"></span>
+                   </div>
+                 </div>
              </div>
            </li>
 
          </ul>
-
+        <a href="#" class="button round">Jugar</a>
 
        </div>
 
