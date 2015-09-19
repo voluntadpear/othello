@@ -3,15 +3,14 @@
   <meta charset="UTF-8">
   <link rel="stylesheet" href="../node_modules/foundation-sites/css/foundation.min.css">
   <script src="../node_modules/foundation-sites/js/vendor/modernizr.js"></script>
-  <script src="../node_modules/foundation-sites/js/vendor/foundation.min.js"></script>
-<title>Javascript Reversi</title>
-<script>
-  var $ = jQuery = require('../scripts/jquery-2.1.4.min.js');
-</script>
+  <script src="../scripts/jquery-2.1.4.min.js"></script>
+<title>Othello</title>
 </head>
 
 <body style=padding:0;margin:0>
-
+  <script>
+    var $ = jQuery = require('../scripts/jquery-2.1.4.min.js');
+  </script>
      <div class="row">
        <div class="large-3 columns">
          <h1>Othello</h1>
@@ -26,7 +25,7 @@
 
      <div class="row">
 
-       <div class="large-9 push-3 columns">
+       <div class="large-8 push-4 columns">
          <table class=rboard cellspacing=0 cellpadding=0>
          <script>
          // Visit http://davidbau.com/reversi/#easy for 'easy mode'
@@ -52,21 +51,49 @@
          <br>
          </div>
          </center>
-         <script src="reversi.js"></script>
+         <script src="scripts/reversi.js"></script>
 
 
        </div>
 
 
-       <div class="large-3 pull-9 columns">
+       <div class="large-4 pull-8 columns">
 
-         <ul class="side-nav">
-           <li><a href="#">Límite de Nivel</a></li>
-           <li><a href="#">Section 2</a></li>
-           <li><a href="#">Section 3</a></li>
-           <li><a href="#">Section 4</a></li>
-           <li><a href="#">Section 5</a></li>
-           <li><a href="#">Section 6</a></li>
+         <ul class="side-nav accordion" data-accordion>
+           <li class="accordion-navigation">
+             <a href="#j1options">Jugador 1</a>
+             <div id="j1options" class="content">
+               <div class="row">
+                 <div class="small-3 columns">
+                   <label for="estrategia1" class="inline">Estrategia:</label>
+                 </div>
+                 <div class="small-9 columns">
+                   <button id="estrategia1" data-dropdown="drop1" aria-controls="drop1"
+                   aria-expanded="false" class="tiny round button dropdown">
+                   Estrategia</button>
+                   <ul id="drop1" data-dropdown-content class="f-dropdown" role="menu" aria-hidden="false" tabindex="-1">
+                     <li><a href="#">Humano</a></li>
+                     <li><a href="#">Estrategia Minimax</a></li>
+                     <li><a href="#">Estrategia Minimax con Poda Alfa Beta</a></li>
+                     <li><a href="#">Estrategia Aleatoria</a></li>
+                   </ul>
+                 </div>
+               </div>
+               <label for="rango1" >Límite de nivel: <b><span id="limite1"> </span></b></label>
+                   <div class="range-slider round" data-slider data-options="start: 1; end: 10; display_selector: #limite1;">
+                    <span class="range-slider-handle" role="slider" tabindex="0"></span>
+                    <span class="range-slider-active-segment"></span>
+                   </div>
+             </div>
+           </li>
+           <br />
+           <li class="accordion-navigation">
+             <a href="#j2options">Jugador 2</a>
+             <div id="j2options" class="content">
+               Opciones del jugador 2.
+             </div>
+           </li>
+
          </ul>
 
 
@@ -81,18 +108,28 @@
          <hr/>
          <div class="row">
            <div class="large-6 columns">
-             <p>© Copyright no one at all. Go to town.</p>
+             <p></p>
            </div>
            <div class="large-6 columns">
              <ul class="inline-list right">
-               <li><a href="#">Section 1</a></li>
-               <li><a href="#">Section 2</a></li>
-               <li><a href="#">Section 3</a></li>
-               <li><a href="#">Section 4</a></li>
+               <li></li>
              </ul>
            </div>
          </div>
        </div>
      </footer>
+     <script src="../node_modules/foundation-sites/js/vendor/fastclick.js"></script>
+     <script src="../node_modules/foundation-sites/js/foundation.min.js"></script>
+     <script src="../node_modules/foundation-sites/js/foundation/foundation.dropdown.js"></script>
+     <script src="../node_modules/foundation-sites/js/foundation/foundation.slider.js"></script>
+     <script>
+      $(document).foundation({
+        accordion: {
+          callback: function(accordion) {
+            $(document).foundation('reflow');
+          }
+        }
+      });
+     </script>
 </body>
 </html>
