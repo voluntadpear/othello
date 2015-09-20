@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------
 
 var estrategias = ["Humano", "Estrategia Minimax", "Estrategia Minimax con Poda Alfa Beta", "Estrategia aleatoria"];
+var estrategiasUsadas = [0, 0];
 function seleccion(jugador, opcion) {
   const selector = `#estrategia${jugador}`;
   $(selector).text(estrategias[opcion]);
@@ -12,6 +13,12 @@ function seleccion(jugador, opcion) {
   else {
     $(`#limiteblock${jugador}`).show();
   }
+  seleccion[jugador-1] = opcion;
+};
+
+function jugar() {
+  console.log(`el jugador 1 jugara con estrategia ${estrategias[seleccion[0]]}`);
+  console.log(`el jugador 2 jugara con estrategia ${estrategias[seleccion[1]]}`);
 }
 // Attach the "doclick" event to each reversi board square.
 $('.rsquare').mousedown(function() { doclick(coords(this)); return false; });
