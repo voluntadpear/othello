@@ -20,11 +20,6 @@ function jugar() {
   console.log(`el jugador 1 jugara con estrategia ${estrategias[seleccion[0]]}`);
   console.log(`el jugador 2 jugara con estrategia ${estrategias[seleccion[1]]}`);
 }
-// Attach the "doclick" event to each reversi board square.
-$('.rsquare').mousedown(function() { doclick(coords(this)); return false; });
-function coords(cell) {
-  return [parseInt(cell.id.substr(1,1)), parseInt(cell.id.substr(2,1))];
-}
 
 // Images for the three states of a board square.
 var images = ['black.gif', 'green.gif', 'white.gif'];

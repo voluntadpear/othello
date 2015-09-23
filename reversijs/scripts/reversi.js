@@ -1,14 +1,24 @@
 // For debugging: log if there is a console
+var jugadorActual = 1;
 function log(message) {
   if (typeof console != 'undefined') { console.log(message); }
 }
 
+// Attach the "doclick" event to each reversi board square.
+$('.rsquare').mousedown(function() { colocarFicha(coords(this)); return false; });
+function coords(cell) {
+  return [parseInt(cell.id.substr(1,1)), parseInt(cell.id.substr(2,1))];
+}
+
 // Called with coordinates (x,y) when the player clicks on a square.
-function doclick(c) {
+function colocarFicha(c) {
   //if (mainboard.computeris == mainboard.whosemove) return;
   var saved = new board(mainboard);
   if (mainboard.domove(c)) {
     drawall(mainboard);
+    jugadorActual = jugadorActual === 1 ? 2 : 1;
+    console.log(`Jugador ${jugadorActual}`);
+    $("#labeljugador").text(`Jugador ${jugadorActual}`);
   }
 }
 
