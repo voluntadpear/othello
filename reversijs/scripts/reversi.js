@@ -19,7 +19,21 @@ function colocarFicha(c) {
     jugadorActual = jugadorActual === 1 ? 2 : 1;
     console.log(`Jugador ${jugadorActual}`);
     $("#labeljugador").text(`Jugador ${jugadorActual}`);
+    console.log(mainboard.state_vector);
+    $("#puntaje1").text(cantFichas(1));
+    $("#puntaje2").text(cantFichas(2));
+    console.log("Total: " + cantFichas());
   }
+}
+
+function cantFichas(jugador) {
+  if(jugador) {
+      var actual = jugador === 1 ? -1 : 1;
+      var filtrados = mainboard.state_vector.filter(function(e) { return e === actual});
+      return filtrados.length;
+  }
+  var filtrados = mainboard.state_vector.filter(function(e) { return e === 0 });
+  return mainboard.state_vector.length - filtrados.length;
 }
 
 // When the player clicks the "pass" button.  If there is a redo stack,
