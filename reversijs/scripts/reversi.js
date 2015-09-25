@@ -1,9 +1,20 @@
 // For debugging: log if there is a console
 var jugadorActual = 1;
+//JUGADOR 1: Negras. JUGADOR 2: Blancas.
 function log(message) {
   if (typeof console != 'undefined') { console.log(message); }
 }
 
+var ponderaciones = [
+  100,  -25,  25, 5,  5,  25, -25,  100,
+  -25,  -30,  -5, -5, -5, -5, -30,  -25,
+  25,    -5,   7,  3,  3,  7,  -5,   25,
+   5,    -5,  3,  3,  3,  3,  -5,     5,
+   5,    -5,  3,  3,  3,  3,  -5,     5,
+   25,   -5,  7,  3,  3,  7,   -5,   25,
+   -25, -30,  -5, -5, -5, -5, -30,  -25,
+   100, -25,  25, 5,  5,  25, -25,  100
+ ];
 // Attach the "doclick" event to each reversi board square.
 $('.rsquare').mousedown(function() { colocarFicha(coords(this)); return false; });
 function coords(cell) {
@@ -20,20 +31,41 @@ function colocarFicha(c) {
     console.log(`Jugador ${jugadorActual}`);
     $("#labeljugador").text(`Jugador ${jugadorActual}`);
     console.log(mainboard.state_vector);
-    $("#puntaje1").text(cantFichas(1));
-    $("#puntaje2").text(cantFichas(2));
-    console.log("Total: " + cantFichas());
+    $("#puntaje1").text(cantFichas(mainboard, 1));
+    $("#puntaje2").text(cantFichas(mainboard, 2));
+    console.log("Total: " + cantFichas(mainboard));
+    console.log("Evaluacion: " + evaluar(mainboard, 1));
   }
 }
 
-function cantFichas(jugador) {
+function evaluar(tablero, jugadorIA) {
+  var totalJugContrario = 0;
+  var totalJugIA = 0;
+  var jugIA = jugadorIA === 1 ? -1 : 1;
+  var jugContrario = (-1)*jugIA;
+
+  for(var i=0; i<8; i++) {
+    for(var j=0; j<8; j++) {
+      var casillaActual = tablero.state_vector[i + 8 * j];
+      if(casillaActual === jugIA) {
+        totalJugIA += ponderaciones[i + 8 * j];
+      } else if(casillaActual === jugContrario) {
+        totalJugContrario += ponderaciones[i + 8 *j];
+      }
+    }
+  }
+
+  return totalJugIA - totalJugContrario;
+}
+
+function cantFichas(tablero, jugador) {
   if(jugador) {
       var actual = jugador === 1 ? -1 : 1;
-      var filtrados = mainboard.state_vector.filter(function(e) { return e === actual});
+      var filtrados = tablero.state_vector.filter(function(e) { return e === actual});
       return filtrados.length;
   }
-  var filtrados = mainboard.state_vector.filter(function(e) { return e === 0 });
-  return mainboard.state_vector.length - filtrados.length;
+  var filtrados = tablero.state_vector.filter(function(e) { return e === 0 });
+  return tablero.state_vector.length - filtrados.length;
 }
 
 // When the player clicks the "pass" button.  If there is a redo stack,
