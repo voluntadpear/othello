@@ -35,6 +35,7 @@ function drawall(board) {
     $(this).find('img').attr('src', images[board.state(coords(this)) + 1]);
   });
   drawtext(board);
+  return true;
 }
 
 // Sets all the text (e.g., whose turn it is) based on the "board" object.

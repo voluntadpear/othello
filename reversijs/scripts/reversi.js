@@ -1,6 +1,6 @@
 // For debugging: log if there is a console
 var jugadorActual = 1;
-
+var conteoNodos = 0;
 var mainboard = new board();
 drawall(mainboard);
 //JUGADOR 1: Negras. JUGADOR 2: Blancas.
@@ -23,11 +23,13 @@ $('.rsquare').mousedown(function() {
   if(estrategiasUsadas[jugadorActual-1] !== 0) return false;
   var result = colocarFicha(mainboard, coords(this));
   if(result) {
-    drawall(mainboard);
-    $("#puntaje1").text(cantFichas(mainboard, 1));
-    $("#puntaje2").text(cantFichas(mainboard, 2));
-    console.log(`Jugador ${jugadorActual}: [${coords(this)[0]},${coords(this)[1]}]`)
-    juegoOponente(mainboard);
+    var drawed = drawall(mainboard);
+    if(drawed) {
+      $("#puntaje1").text(cantFichas(mainboard, 1));
+      $("#puntaje2").text(cantFichas(mainboard, 2));
+      console.log(`Jugador ${jugadorActual}: [${coords(this)[0]},${coords(this)[1]}]`)
+      juegoOponente(mainboard);
+    }
   }
   return false;
 });
@@ -46,6 +48,7 @@ function minimax(tablero, profundidad, esJugadorIA, jugadorIA) {
     for(var i=0; i < movimientos.length; i++) {
       var hijo = new board(tablero);
       colocarFicha(hijo, movimientos[i]);
+      conteoNodos++;
       var val = minimax(hijo, profundidad - 1, false, jugadorIA);
       mejorValor = Math.max(mejorValor, val);
     }
@@ -55,6 +58,7 @@ function minimax(tablero, profundidad, esJugadorIA, jugadorIA) {
     for(var i=0; i < movimientos.length; i++) {
       var hijo = new board(tablero);
       colocarFicha(hijo, movimientos[i]);
+      conteoNodos++;
       var val = minimax(hijo, profundidad - 1, true, jugadorIA);
       mejorValor = Math.min(mejorValor, val);
     }
@@ -66,22 +70,27 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
   var movimientos = posiblesMovimientos(tablero, jugadorIA);
   var mejorValor = Number.NEGATIVE_INFINITY;
   var indiceJugada = 0;
-  for(var i = 0; i<movimientos.length; i++) {
-    var hijo = new board(tablero);
-    colocarFicha(hijo, movimientos[i]);
-    var val = minimax(hijo, nivel-1, false, jugadorIA);
-    if(val > mejorValor) {
-      mejorValor = val;
-      indiceJugada = i;
+  conteoNodos = 0;
+  if(movimientos.length > 0) {
+    for(var i = 0; i<movimientos.length; i++) {
+      var hijo = new board(tablero);
+      colocarFicha(hijo, movimientos[i]);
+      conteoNodos++;
+      var val = minimax(hijo, nivel-1, false, jugadorIA);
+      if(val > mejorValor) {
+        mejorValor = val;
+        indiceJugada = i;
+      }
     }
-  }
-  var result = colocarFicha(tablero, movimientos[indiceJugada]);
-  if(result) {
-    drawall(tablero);
-    $("#puntaje1").text(cantFichas(tablero, 1));
-    $("#puntaje2").text(cantFichas(tablero, 2));
-    console.log(`Jugador ${jugadorActual}: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`)
-    juegoOponente(tablero);
+    var result = colocarFicha(tablero, movimientos[indiceJugada]);
+    if(result) {
+      drawall(tablero);
+      $("#puntaje1").text(cantFichas(tablero, 1));
+      $("#puntaje2").text(cantFichas(tablero, 2));
+      console.log(`Jugador ${jugadorActual}: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`)
+    }
+  } else {
+    console.log("Sin movimientos posibles.");
   }
 }
 
@@ -96,6 +105,7 @@ function alfaBeta(tablero, profundidad, alfa, beta, esJugadorIA, jugadorIA) {
     for(var i=0; i < movimientos.length; i++) {
       var hijo = new board(tablero);
       colocarFicha(hijo, movimientos[i]);
+      conteoNodos++;
       var val = alfaBeta(hijo, profundidad - 1, alfa, beta, false, jugadorIA);
       mejorValor = Math.max(mejorValor, val);
       alfa = Math.max(alfa, mejorValor);
@@ -109,6 +119,7 @@ function alfaBeta(tablero, profundidad, alfa, beta, esJugadorIA, jugadorIA) {
     for(var i=0; i < movimientos.length; i++) {
       var hijo = new board(tablero);
       colocarFicha(hijo, movimientos[i]);
+      conteoNodos++;
       var val = alfaBeta(hijo, profundidad - 1, alfa, beta, true, jugadorIA);
       mejorValor = Math.min(mejorValor, val);
       beta = Math.min(beta, mejorValor);
@@ -126,41 +137,48 @@ function jugarAlfaBeta(tablero, nivel, jugadorIA) {
   var indiceJugada = 0;
   var alfa = Number.NEGATIVE_INFINITY;
   var beta = Number.POSITIVE_INFINITY;
-
-  for(var i = 0; i<movimientos.length; i++) {
-    var hijo = new board(tablero);
-    colocarFicha(hijo, movimientos[i]);
-    var val = alfaBeta(hijo, nivel-1, alfa, beta, false, jugadorIA);
-    if(val > mejorValor) {
-      mejorValor = val;
-      indiceJugada = i;
+  conteoNodos = 0;
+  if(movimientos.length > 0) {
+    for(var i = 0; i<movimientos.length; i++) {
+      var hijo = new board(tablero);
+      colocarFicha(hijo, movimientos[i]);
+      conteoNodos++;
+      var val = alfaBeta(hijo, nivel-1, alfa, beta, false, jugadorIA);
+      if(val > mejorValor) {
+        mejorValor = val;
+        indiceJugada = i;
+      }
+      alfa = Math.max(alfa, mejorValor);
+      if(beta <= alfa) {
+        break; //Poda de beta
+      }
     }
-    alfa = Math.max(alfa, mejorValor);
-    if(beta <= alfa) {
-      break; //Poda de beta
+    var result = colocarFicha(tablero, movimientos[indiceJugada]);
+    if(result) {
+      drawall(tablero);
+      $("#puntaje1").text(cantFichas(tablero, 1));
+      $("#puntaje2").text(cantFichas(tablero, 2));
+      console.log(`Jugador ${jugadorActual}: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`)
     }
-  }
-  var result = colocarFicha(tablero, movimientos[indiceJugada]);
-  if(result) {
-    drawall(tablero);
-    $("#puntaje1").text(cantFichas(tablero, 1));
-    $("#puntaje2").text(cantFichas(tablero, 2));
-    console.log(`Jugador ${jugadorActual}: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`)
-    juegoOponente(tablero);
+  } else {
+    console.log("Sin movimientos posibles");
   }
 }
 
 function jugarAleatorio(tablero, jugadorIA) {
   var movimientos = posiblesMovimientos(tablero, jugadorIA);
   var cantMovimientos = movimientos.length;
-  var indice = Math.floor(Math.random() * cantMovimientos);
-  var result = colocarFicha(tablero, movimientos[indice]);
-  if(result) {
-    drawall(tablero);
-    $("#puntaje1").text(cantFichas(tablero, 1));
-    $("#puntaje2").text(cantFichas(tablero, 2));
-    console.log(`Jugador ${jugadorActual}: [${movimientos[indice][0]},${movimientos[indice][1]}]`)
-    juegoOponente(tablero);
+  if(cantMovimientos > 0) {
+    var indice = Math.floor(Math.random() * cantMovimientos);
+    var result = colocarFicha(tablero, movimientos[indice]);
+    if(result) {
+      drawall(tablero);
+      $("#puntaje1").text(cantFichas(tablero, 1));
+      $("#puntaje2").text(cantFichas(tablero, 2));
+      console.log(`Jugador ${jugadorActual}: [${movimientos[indice][0]},${movimientos[indice][1]}]`)
+    }
+  } else {
+    console.log("Sin movimientos posibles");
   }
 }
 
@@ -181,14 +199,34 @@ function juegoOponente(tablero) {
   switch(estrategiasUsadas[jugadorActual-1]) {
     case 1: //Minimax
       var nivel = parseInt($(`#limite${jugadorActual}`).text());
+      var t0 = performance.now();
       jugarMinimax(tablero, nivel, jugadorActual);
+      var t1 = performance.now();
+      console.log(`Tiempo minimax a nivel ${nivel}: ${(t1-t0)} ms.`);
+      console.log(`Nodos expandidos minimax: ${conteoNodos}`);
+      if(!isGameOver(tablero)) {
+        juegoOponente(tablero);
+      }
       break;
     case 2: //alfaBeta
       var nivel = parseInt($(`#limite${jugadorActual}`).text());
+      var t0 = performance.now();
       jugarAlfaBeta(tablero, nivel, jugadorActual);
+      var t1 = performance.now();
+      console.log(`Tiempo alfa beta a nivel ${nivel}: ${(t1-t0)} ms.`);
+      console.log(`Nodos expandidos alfa beta: ${conteoNodos}`);
+      if(!isGameOver(tablero)) {
+        juegoOponente(tablero);
+      }
       break;
-    case 3:
+    case 3: //Aleatoria
+      var t0 = performance.now();
       jugarAleatorio(tablero, jugadorActual);
+      var t1 = performance.now();
+      console.log(`Tiempo aleatorio: ${(t1-t0)} ms.`);
+      if(!isGameOver(tablero)) {
+        juegoOponente(tablero);
+      }
       break;
   }
 }
@@ -244,6 +282,15 @@ function cantFichas(tablero, jugador) {
   return tablero.state_vector.length - filtrados.length;
 }
 
+function isGameOver(tablero) {
+  var blancas = tablero.state_vector.filter(function(e) { return e === 1 });
+  if(blancas.length === 0) return true;
+  var negras = tablero.state_vector.filter(function(e) { return e === -1 });
+  if(negras.length === 0) return true;
+  var vacias = tablero.state_vector.filter(function(e) { return e === 0 });
+  if(vacias.length === 0) return true;
+  return false;
+}
 // When the player clicks the "pass" button.  If there is a redo stack,
 // this button does a redo.  If the game is over, this button starts a
 // new game.  The button only allows a pass when a pass is legal.
