@@ -1,5 +1,8 @@
 // For debugging: log if there is a console
 var jugadorActual = 1;
+
+var mainboard = new board();
+drawall(mainboard);
 //JUGADOR 1: Negras. JUGADOR 2: Blancas.
 function log(message) {
   if (typeof console != 'undefined') { console.log(message); }
@@ -16,29 +19,80 @@ var ponderaciones = [
    100, -25,  25, 5,  5,  25, -25,  100
  ];
 // Attach the "doclick" event to each reversi board square.
-$('.rsquare').mousedown(function() { colocarFicha(coords(this)); return false; });
+$('.rsquare').mousedown(function() {
+  if(estrategiasUsadas[jugadorActual-1] !== 0) return false;
+  colocarFicha(mainboard, coords(this));
+  $("#puntaje1").text(cantFichas(mainboard, 1));
+  $("#puntaje2").text(cantFichas(mainboard, 2));
+  juegoOponente(mainboard);
+  return false;
+});
 function coords(cell) {
   return [parseInt(cell.id.substr(1,1)), parseInt(cell.id.substr(2,1))];
 }
 
-// Called with coordinates (x,y) when the player clicks on a square.
-function colocarFicha(c) {
-  //if (mainboard.computeris == mainboard.whosemove) return;
-  var saved = new board(mainboard);
-  if (mainboard.domove(c)) {
-    drawall(mainboard);
-    jugadorActual = jugadorActual === 1 ? 2 : 1;
-    console.log(`Jugador ${jugadorActual}`);
-    $("#labeljugador").text(`Jugador ${jugadorActual}`);
-    $("#puntaje1").text(cantFichas(mainboard, 1));
-    $("#puntaje2").text(cantFichas(mainboard, 2));
-    console.log("Total: " + cantFichas(mainboard));
-    console.log("Evaluacion: " + evaluar(mainboard, 1));
-    console.log("Posibles movimientos: ");
-    var mov = posiblesMovimientos(mainboard, jugadorActual);
-    for(var i = 0; i < mov.length; i++) {
-      console.log(`[${mov[i][0]}, ${mov[i][1]}]`);
+function minimax(tablero, profundidad, esJugadorIA, jugadorIA) {
+  var cantCeros = tablero.state_vector.filter(function(e) { return e === 0 });
+  if(profundidad === 0 || cantCeros === 0) {
+    return evaluar(tablero, jugadorIA);
+  }
+  var movimientos = posiblesMovimientos(tablero, jugadorIA);
+  if(esJugadorIA) {
+    var mejorValor = Number.NEGATIVE_INFINITY;
+    for(var i=0; i < movimientos.length; i++) {
+      var hijo = new board(tablero);
+      colocarFicha(hijo, movimientos[i]);
+      var val = minimax(hijo, profundidad - 1, false, jugadorIA);
+      mejorValor = Math.max(mejorValor, val);
     }
+    return mejorValor;
+  } else {
+    var mejorValor = Number.POSITIVE_INFINITY;
+    for(var i=0; i < movimientos.length; i++) {
+      var hijo = new board(tablero);
+      colocarFicha(hijo, movimientos[i]);
+      var val = minimax(hijo, profundidad - 1, true, jugadorIA);
+      mejorValor = Math.min(mejorValor, val);
+    }
+    return mejorValor;
+  }
+}
+
+function jugarMinimax(tablero, nivel, jugadorIA) {
+  var movimientos = posiblesMovimientos(tablero, jugadorIA);
+  var mejorValor = Number.NEGATIVE_INFINITY;
+  var indiceJugada = 0;
+  for(var i = 0; i<movimientos.length; i++) {
+    var hijo = new board(tablero);
+    colocarFicha(hijo, movimientos[i]);
+    var val = minimax(hijo, nivel-1, false, jugadorIA);
+    if(val > mejorValor) {
+      mejorValor = val;
+      indiceJugada = i;
+    }
+  }
+  colocarFicha(tablero, movimientos[indiceJugada]);
+  $("#puntaje1").text(cantFichas(tablero, 1));
+  $("#puntaje2").text(cantFichas(tablero, 2));
+  juegoOponente(tablero);
+}
+// Called with coordinates (x,y) when the player clicks on a square.
+function colocarFicha(tablero, c) {
+  //if (mainboard.computeris == mainboard.whosemove) return;
+  var saved = new board(tablero);
+  if (tablero.domove(c)) {
+    drawall(tablero);
+  }
+}
+
+function juegoOponente(tablero) {
+  jugadorActual = jugadorActual === 1 ? 2 : 1;
+  $("#labeljugador").text(`Jugador ${jugadorActual}`);
+  console.log(`Jugador ${jugadorActual}`);
+  switch(estrategiasUsadas[jugadorActual-1]) {
+    case 1: //Minimax
+      jugarMinimax(tablero, 3, jugadorActual);
+      break;
   }
 }
 //devuelve un array con las coordenadas [x, y] de los movimientos Posibles
@@ -61,6 +115,7 @@ function posiblesMovimientos(tablero, jugador) {
   }
   return respuesta;
 }
+
 
 function evaluar(tablero, jugadorIA) {
   var totalJugContrario = 0;
@@ -107,6 +162,3 @@ function dopass() {
     doclick([]);
   }
 }
-
-var mainboard = new board();
-drawall(mainboard);

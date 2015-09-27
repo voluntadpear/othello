@@ -4,7 +4,7 @@
 
 var estrategias = ["Humano", "Estrategia Minimax", "Estrategia Minimax con Poda Alfa Beta", "Estrategia aleatoria"];
 var estrategiasUsadas = [0, 0];
-function seleccion(jugador, opcion) {
+function seleccionar(jugador, opcion) {
   const selector = `#estrategia${jugador}`;
   $(selector).text(estrategias[opcion]);
   if(opcion==0) {
@@ -13,12 +13,12 @@ function seleccion(jugador, opcion) {
   else {
     $(`#limiteblock${jugador}`).show();
   }
-  seleccion[jugador-1] = opcion;
+  estrategiasUsadas[jugador-1] = opcion;
 };
 
 function jugar() {
-  console.log(`el jugador 1 jugara con estrategia ${estrategias[seleccion[0]]}`);
-  console.log(`el jugador 2 jugara con estrategia ${estrategias[seleccion[1]]}`);
+  console.log(`el jugador 1 jugara con estrategia ${estrategias[estrategiasUsadas[0]]}`);
+  console.log(`el jugador 2 jugara con estrategia ${estrategias[estrategiasUsadas[1]]}`);
 }
 
 // Images for the three states of a board square.
