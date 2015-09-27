@@ -89,8 +89,12 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
       $("#puntaje2").text(cantFichas(tablero, 2));
       console.log(`Jugador ${jugadorActual}: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`)
     }
+    else {
+      console.log(`Movimiento invalido: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`);
+    }
   } else {
     console.log("Sin movimientos posibles.");
+    tablero.pass();
   }
 }
 
@@ -162,6 +166,7 @@ function jugarAlfaBeta(tablero, nivel, jugadorIA) {
     }
   } else {
     console.log("Sin movimientos posibles");
+    tablero.pass();
   }
 }
 
@@ -179,6 +184,7 @@ function jugarAleatorio(tablero, jugadorIA) {
     }
   } else {
     console.log("Sin movimientos posibles");
+    tablero.pass();
   }
 }
 
@@ -194,7 +200,8 @@ function colocarFicha(tablero, c) {
 
 function juegoOponente(tablero) {
   jugadorActual = jugadorActual === 1 ? 2 : 1;
-  $("#labeljugador").text(`Jugador ${jugadorActual}`);
+  var labelJug = jugadorActual === 1 ? "Negras" : "Blancas";
+  $("#labeljugador").text(`Jugador ${jugadorActual} (${labelJug})`);
   console.log(`Jugador ${jugadorActual}`);
   switch(estrategiasUsadas[jugadorActual-1]) {
     case 1: //Minimax
@@ -228,6 +235,10 @@ function juegoOponente(tablero) {
         juegoOponente(tablero);
       }
       break;
+  }
+  if(isGameOver(tablero)) {
+    console.log(`Ganador: ${jugadorActual} (${labelJug})!`);
+    $("#labeljugador").text(`Ganador: ${jugadorActual} (${labelJug})!`);
   }
 }
 //devuelve un array con las coordenadas [x, y] de los movimientos Posibles
@@ -289,6 +300,7 @@ function isGameOver(tablero) {
   if(negras.length === 0) return true;
   var vacias = tablero.state_vector.filter(function(e) { return e === 0 });
   if(vacias.length === 0) return true;
+  if(posiblesMovimientos(tablero, 1).length === 0 && posiblesMovimientos(tablero, 2).length === 0) return true;
   return false;
 }
 // When the player clicks the "pass" button.  If there is a redo stack,
