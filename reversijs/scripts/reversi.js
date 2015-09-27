@@ -1,6 +1,7 @@
 // For debugging: log if there is a console
 var jugadorActual = 1;
 var conteoNodos = 0;
+
 var mainboard = new board();
 drawall(mainboard);
 //JUGADOR 1: Negras. JUGADOR 2: Blancas.
@@ -39,16 +40,19 @@ function coords(cell) {
 }
 
 function minimax(tablero, profundidad, esJugadorIA, jugadorIA) {
-  var cantCeros = tablero.state_vector.filter(function(e) { return e === 0 });
   if(profundidad === 0 || isGameOver(tablero)) {
     return evaluar(tablero, jugadorIA);
   }
-  var movimientos = posiblesMovimientos(tablero, jugadorIA);
+  var color = jugadorIA === 1 ? -1 : 1;
+  var contrario = jugadorIA === 1 ? 2 : 1;
   if(esJugadorIA) {
     var mejorValor = Number.NEGATIVE_INFINITY;
+    //tablero.whosemove = color;
+    var movimientos = posiblesMovimientos(tablero, jugadorIA);
     for(var i=0; i < movimientos.length; i++) {
       var hijo = new board(tablero);
-      colocarFicha(hijo, movimientos[i]);
+      var result = colocarFicha(hijo, movimientos[i]);
+      if(!result) console.log("movimiento invalidado en minimax profundidad: " + profundidad);
       conteoNodos++;
       var val = minimax(hijo, profundidad - 1, false, jugadorIA);
       mejorValor = Math.max(mejorValor, val);
@@ -56,9 +60,11 @@ function minimax(tablero, profundidad, esJugadorIA, jugadorIA) {
     return mejorValor;
   } else {
     var mejorValor = Number.POSITIVE_INFINITY;
+    var movimientos = posiblesMovimientos(tablero, contrario);
     for(var i=0; i < movimientos.length; i++) {
       var hijo = new board(tablero);
-      colocarFicha(hijo, movimientos[i]);
+      var result = colocarFicha(hijo, movimientos[i]);
+      if(!result) console.log("movimiento invalidado en minimax profundidad: " + profundidad)
       conteoNodos++;
       var val = minimax(hijo, profundidad - 1, true, jugadorIA);
       mejorValor = Math.min(mejorValor, val);
@@ -75,7 +81,8 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
   if(movimientos.length > 0) {
     for(var i = 0; i<movimientos.length; i++) {
       var hijo = new board(tablero);
-      colocarFicha(hijo, movimientos[i]);
+      var result = colocarFicha(hijo, movimientos[i]);
+      if(!result) console.log("Movimiento no valido en minimax");
       conteoNodos++;
       var val = minimax(hijo, nivel-1, false, jugadorIA);
       if(val > mejorValor) {
@@ -102,12 +109,15 @@ function alfaBeta(tablero, profundidad, alfa, beta, esJugadorIA, jugadorIA) {
   if(profundidad === 0 || isGameOver(tablero)) {
     return evaluar(tablero, jugadorIA);
   }
-  var movimientos = posiblesMovimientos(tablero, jugadorIA);
+  var color = jugadorIA === 1 ? -1 : 1;
+  var contrario = jugadorIA === 1 ? 2 : 1;
   if(esJugadorIA) {
     var mejorValor = Number.NEGATIVE_INFINITY;
+    var movimientos = posiblesMovimientos(tablero, jugadorIA);
     for(var i=0; i < movimientos.length; i++) {
       var hijo = new board(tablero);
-      colocarFicha(hijo, movimientos[i]);
+      var result = colocarFicha(hijo, movimientos[i]);
+      if(!result) console.log("movimiento invalidado en minimax profundidad: " + profundidad);
       conteoNodos++;
       var val = alfaBeta(hijo, profundidad - 1, alfa, beta, false, jugadorIA);
       mejorValor = Math.max(mejorValor, val);
@@ -119,9 +129,11 @@ function alfaBeta(tablero, profundidad, alfa, beta, esJugadorIA, jugadorIA) {
     return mejorValor;
   } else {
     var mejorValor = Number.POSITIVE_INFINITY;
+    var movimientos = posiblesMovimientos(tablero, contrario);
     for(var i=0; i < movimientos.length; i++) {
       var hijo = new board(tablero);
-      colocarFicha(hijo, movimientos[i]);
+      var result = colocarFicha(hijo, movimientos[i]);
+      if(!result) console.log("movimiento invalidado en minimax profundidad: " + profundidad);
       conteoNodos++;
       var val = alfaBeta(hijo, profundidad - 1, alfa, beta, true, jugadorIA);
       mejorValor = Math.min(mejorValor, val);
