@@ -40,7 +40,7 @@ function coords(cell) {
 
 function minimax(tablero, profundidad, esJugadorIA, jugadorIA) {
   var cantCeros = tablero.state_vector.filter(function(e) { return e === 0 });
-  if(profundidad === 0 || cantCeros === 0) {
+  if(profundidad === 0 || isGameOver(tablero)) {
     return evaluar(tablero, jugadorIA);
   }
   var movimientos = posiblesMovimientos(tablero, jugadorIA);
@@ -99,8 +99,7 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
 }
 
 function alfaBeta(tablero, profundidad, alfa, beta, esJugadorIA, jugadorIA) {
-  var cantCeros = tablero.state_vector.filter(function(e) { return e === 0 });
-  if(profundidad === 0 || cantCeros === 0) {
+  if(profundidad === 0 || isGameOver(tablero)) {
     return evaluar(tablero, jugadorIA);
   }
   var movimientos = posiblesMovimientos(tablero, jugadorIA);
