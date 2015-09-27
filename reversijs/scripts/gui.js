@@ -19,6 +19,11 @@ function seleccionar(jugador, opcion) {
 function jugar() {
   console.log(`el jugador 1 jugara con estrategia ${estrategias[estrategiasUsadas[0]]}`);
   console.log(`el jugador 2 jugara con estrategia ${estrategias[estrategiasUsadas[1]]}`);
+  mainboard = new board();
+  drawall(mainboard);
+  jugadorActual = 2; //ponemos en 2 porque la proxima llamada juegoOpenente() va a poner en 0
+  juegoOponente(mainboard);
+
 }
 
 // Images for the three states of a board square.

@@ -21,10 +21,14 @@ var ponderaciones = [
 // Attach the "doclick" event to each reversi board square.
 $('.rsquare').mousedown(function() {
   if(estrategiasUsadas[jugadorActual-1] !== 0) return false;
-  colocarFicha(mainboard, coords(this));
-  $("#puntaje1").text(cantFichas(mainboard, 1));
-  $("#puntaje2").text(cantFichas(mainboard, 2));
-  juegoOponente(mainboard);
+  var result = colocarFicha(mainboard, coords(this));
+  if(result) {
+    drawall(mainboard);
+    $("#puntaje1").text(cantFichas(mainboard, 1));
+    $("#puntaje2").text(cantFichas(mainboard, 2));
+    console.log(`Jugador ${jugadorActual}: [${coords(this)[0]},${coords(this)[1]}]`)
+    juegoOponente(mainboard);
+  }
   return false;
 });
 function coords(cell) {
@@ -71,18 +75,23 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
       indiceJugada = i;
     }
   }
-  colocarFicha(tablero, movimientos[indiceJugada]);
-  $("#puntaje1").text(cantFichas(tablero, 1));
-  $("#puntaje2").text(cantFichas(tablero, 2));
-  juegoOponente(tablero);
+  var result = colocarFicha(tablero, movimientos[indiceJugada]);
+  if(result) {
+    drawall(tablero);
+    $("#puntaje1").text(cantFichas(tablero, 1));
+    $("#puntaje2").text(cantFichas(tablero, 2));
+    console.log(`Jugador ${jugadorActual}: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`)
+    juegoOponente(tablero);
+  }
 }
 // Called with coordinates (x,y) when the player clicks on a square.
 function colocarFicha(tablero, c) {
   //if (mainboard.computeris == mainboard.whosemove) return;
   var saved = new board(tablero);
   if (tablero.domove(c)) {
-    drawall(tablero);
+    return true;
   }
+  return false;
 }
 
 function juegoOponente(tablero) {
@@ -91,7 +100,8 @@ function juegoOponente(tablero) {
   console.log(`Jugador ${jugadorActual}`);
   switch(estrategiasUsadas[jugadorActual-1]) {
     case 1: //Minimax
-      jugarMinimax(tablero, 3, jugadorActual);
+      var nivel = parseInt($(`#limite${jugadorActual}`).text());
+      jugarMinimax(tablero, nivel, jugadorActual);
       break;
   }
 }
