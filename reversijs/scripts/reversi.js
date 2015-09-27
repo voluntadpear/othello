@@ -237,8 +237,18 @@ function juegoOponente(tablero) {
       break;
   }
   if(isGameOver(tablero)) {
-    console.log(`Ganador: ${jugadorActual} (${labelJug})!`);
-    $("#labeljugador").text(`Ganador: ${jugadorActual} (${labelJug})!`);
+    var puntaje1 = cantFichas(tablero, 1);
+    var puntaje2 = cantFichas(tablero, 2);
+    if(puntaje1 > puntaje2) {
+    console.log(`Ganador: Jugador 1 (Negras)!`);
+    $("#labeljugador").text(`Ganador: Jugador 1 (Negras)!`);
+    } else if(puntaje2 > puntaje1) {
+      console.log(`Ganador: Jugador 2 (Blancas)!`);
+      $("#labeljugador").text(`Ganador: Jugador 2 (Blancas)!`);
+    } else {
+      console.log(`Empate`);
+      $("#labeljugador").text(`Empate`);
+    }
   }
 }
 //devuelve un array con las coordenadas [x, y] de los movimientos Posibles

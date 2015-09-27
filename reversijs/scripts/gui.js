@@ -7,7 +7,7 @@ var estrategiasUsadas = [0, 0];
 function seleccionar(jugador, opcion) {
   const selector = `#estrategia${jugador}`;
   $(selector).text(estrategias[opcion]);
-  if(opcion==0) {
+  if(opcion===0 || opcion===3) {
     $(`#limiteblock${jugador}`).hide();
   }
   else {
