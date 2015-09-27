@@ -84,6 +84,86 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
     juegoOponente(tablero);
   }
 }
+
+function alfaBeta(tablero, profundidad, alfa, beta, esJugadorIA, jugadorIA) {
+  var cantCeros = tablero.state_vector.filter(function(e) { return e === 0 });
+  if(profundidad === 0 || cantCeros === 0) {
+    return evaluar(tablero, jugadorIA);
+  }
+  var movimientos = posiblesMovimientos(tablero, jugadorIA);
+  if(esJugadorIA) {
+    var mejorValor = Number.NEGATIVE_INFINITY;
+    for(var i=0; i < movimientos.length; i++) {
+      var hijo = new board(tablero);
+      colocarFicha(hijo, movimientos[i]);
+      var val = alfaBeta(hijo, profundidad - 1, alfa, beta, false, jugadorIA);
+      mejorValor = Math.max(mejorValor, val);
+      alfa = Math.max(alfa, mejorValor);
+      if(beta <= alfa) {
+        break; //Poda de beta
+      }
+    }
+    return mejorValor;
+  } else {
+    var mejorValor = Number.POSITIVE_INFINITY;
+    for(var i=0; i < movimientos.length; i++) {
+      var hijo = new board(tablero);
+      colocarFicha(hijo, movimientos[i]);
+      var val = alfaBeta(hijo, profundidad - 1, alfa, beta, true, jugadorIA);
+      mejorValor = Math.min(mejorValor, val);
+      beta = Math.min(beta, mejorValor);
+      if(beta <= alfa) {
+        break; //Poda de alfa
+      }
+    }
+    return mejorValor;
+  }
+}
+
+function jugarAlfaBeta(tablero, nivel, jugadorIA) {
+  var movimientos = posiblesMovimientos(tablero, jugadorIA);
+  var mejorValor = Number.NEGATIVE_INFINITY;
+  var indiceJugada = 0;
+  var alfa = Number.NEGATIVE_INFINITY;
+  var beta = Number.POSITIVE_INFINITY;
+
+  for(var i = 0; i<movimientos.length; i++) {
+    var hijo = new board(tablero);
+    colocarFicha(hijo, movimientos[i]);
+    var val = alfaBeta(hijo, nivel-1, alfa, beta, false, jugadorIA);
+    if(val > mejorValor) {
+      mejorValor = val;
+      indiceJugada = i;
+    }
+    alfa = Math.max(alfa, mejorValor);
+    if(beta <= alfa) {
+      break; //Poda de beta
+    }
+  }
+  var result = colocarFicha(tablero, movimientos[indiceJugada]);
+  if(result) {
+    drawall(tablero);
+    $("#puntaje1").text(cantFichas(tablero, 1));
+    $("#puntaje2").text(cantFichas(tablero, 2));
+    console.log(`Jugador ${jugadorActual}: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`)
+    juegoOponente(tablero);
+  }
+}
+
+function jugarAleatorio(tablero, jugadorIA) {
+  var movimientos = posiblesMovimientos(tablero, jugadorIA);
+  var cantMovimientos = movimientos.length;
+  var indice = Math.floor(Math.random() * cantMovimientos);
+  var result = colocarFicha(tablero, movimientos[indice]);
+  if(result) {
+    drawall(tablero);
+    $("#puntaje1").text(cantFichas(tablero, 1));
+    $("#puntaje2").text(cantFichas(tablero, 2));
+    console.log(`Jugador ${jugadorActual}: [${movimientos[indice][0]},${movimientos[indice][1]}]`)
+    juegoOponente(tablero);
+  }
+}
+
 // Called with coordinates (x,y) when the player clicks on a square.
 function colocarFicha(tablero, c) {
   //if (mainboard.computeris == mainboard.whosemove) return;
@@ -102,6 +182,13 @@ function juegoOponente(tablero) {
     case 1: //Minimax
       var nivel = parseInt($(`#limite${jugadorActual}`).text());
       jugarMinimax(tablero, nivel, jugadorActual);
+      break;
+    case 2: //alfaBeta
+      var nivel = parseInt($(`#limite${jugadorActual}`).text());
+      jugarAlfaBeta(tablero, nivel, jugadorActual);
+      break;
+    case 3:
+      jugarAleatorio(tablero, jugadorActual);
       break;
   }
 }
