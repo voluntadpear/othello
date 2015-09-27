@@ -22,7 +22,7 @@ function jugar() {
   mainboard = new board();
   drawall(mainboard);
   jugadorActual = 2; //ponemos en 2 porque la proxima llamada juegoOpenente() va a poner en 0
-  juegoOponente(mainboard);
+  continuarJuego(mainboard);
 
 }
 

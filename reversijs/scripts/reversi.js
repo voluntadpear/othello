@@ -8,16 +8,17 @@ function log(message) {
   if (typeof console != 'undefined') { console.log(message); }
 }
 
+//Fuente de matriz de ponderaciones: https://reversiworld.wordpress.com/2013/10/28/weighted-square-strategy/
 var ponderaciones = [
-  100,  -25,  25, 5,  5,  25, -25,  100,
-  -25,  -30,  -5, -5, -5, -5, -30,  -25,
-  25,    -5,   7,  3,  3,  7,  -5,   25,
-   5,    -5,  3,  3,  3,  3,  -5,     5,
-   5,    -5,  3,  3,  3,  3,  -5,     5,
-   25,   -5,  7,  3,  3,  7,   -5,   25,
-   -25, -30,  -5, -5, -5, -5, -30,  -25,
-   100, -25,  25, 5,  5,  25, -25,  100
- ];
+    120, -20,  20,   5,   5,  20, -20, 120,
+    -20, -40,  -5,  -5,  -5,  -5, -40, -20,
+     20,  -5,  15,   3,   3,  15,  -5,  20,
+      5,  -5,   3,   3,   3,   3,  -5,   5,
+      5,  -5,   3,   3,   3,   3,  -5,   5,
+     20,  -5,  15,   3,   3,  15,  -5,  20
+    -20, -40,  -5,  -5,  -5,  -5, -40, -20,
+    120, -20,  20,   5,   5,  20, -20, 120,
+];
 // Attach the "doclick" event to each reversi board square.
 $('.rsquare').mousedown(function() {
   if(estrategiasUsadas[jugadorActual-1] !== 0) return false;
@@ -28,7 +29,7 @@ $('.rsquare').mousedown(function() {
       $("#puntaje1").text(cantFichas(mainboard, 1));
       $("#puntaje2").text(cantFichas(mainboard, 2));
       console.log(`Jugador ${jugadorActual}: [${coords(this)[0]},${coords(this)[1]}]`)
-      juegoOponente(mainboard);
+      continuarJuego(mainboard);
     }
   }
   return false;
@@ -94,7 +95,6 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
     }
   } else {
     console.log("Sin movimientos posibles.");
-    tablero.pass();
   }
 }
 
@@ -166,7 +166,6 @@ function jugarAlfaBeta(tablero, nivel, jugadorIA) {
     }
   } else {
     console.log("Sin movimientos posibles");
-    tablero.pass();
   }
 }
 
@@ -184,7 +183,6 @@ function jugarAleatorio(tablero, jugadorIA) {
     }
   } else {
     console.log("Sin movimientos posibles");
-    tablero.pass();
   }
 }
 
@@ -198,43 +196,47 @@ function colocarFicha(tablero, c) {
   return false;
 }
 
-function juegoOponente(tablero) {
+function continuarJuego(tablero) {
   jugadorActual = jugadorActual === 1 ? 2 : 1;
   var labelJug = jugadorActual === 1 ? "Negras" : "Blancas";
   $("#labeljugador").text(`Jugador ${jugadorActual} (${labelJug})`);
   console.log(`Jugador ${jugadorActual}`);
-  switch(estrategiasUsadas[jugadorActual-1]) {
-    case 1: //Minimax
-      var nivel = parseInt($(`#limite${jugadorActual}`).text());
-      var t0 = performance.now();
-      jugarMinimax(tablero, nivel, jugadorActual);
-      var t1 = performance.now();
-      console.log(`Tiempo minimax a nivel ${nivel}: ${(t1-t0)} ms.`);
-      console.log(`Nodos expandidos minimax: ${conteoNodos}`);
-      if(!isGameOver(tablero)) {
-        juegoOponente(tablero);
-      }
-      break;
-    case 2: //alfaBeta
-      var nivel = parseInt($(`#limite${jugadorActual}`).text());
-      var t0 = performance.now();
-      jugarAlfaBeta(tablero, nivel, jugadorActual);
-      var t1 = performance.now();
-      console.log(`Tiempo alfa beta a nivel ${nivel}: ${(t1-t0)} ms.`);
-      console.log(`Nodos expandidos alfa beta: ${conteoNodos}`);
-      if(!isGameOver(tablero)) {
-        juegoOponente(tablero);
-      }
-      break;
-    case 3: //Aleatoria
-      var t0 = performance.now();
-      jugarAleatorio(tablero, jugadorActual);
-      var t1 = performance.now();
-      console.log(`Tiempo aleatorio: ${(t1-t0)} ms.`);
-      if(!isGameOver(tablero)) {
-        juegoOponente(tablero);
-      }
-      break;
+  if(estrategiasUsadas[jugadorActual-1]!=0) { //Si el jugador actual no es Humano
+    juegoOponente(tablero);
+  }
+}
+//Maneja la estrategia a usar segun el jugador actual
+function juegoOponente(tablero) {
+  var movimientos = posiblesMovimientos(tablero, jugadorActual);
+  var cantMovimientos = movimientos.length;
+  if(cantMovimientos > 0) {
+    switch(estrategiasUsadas[jugadorActual-1]) {
+      case 1: //Minimax
+        var nivel = parseInt($(`#limite${jugadorActual}`).text());
+        var t0 = performance.now();
+        jugarMinimax(tablero, nivel, jugadorActual);
+        var t1 = performance.now();
+        console.log(`Tiempo minimax a nivel ${nivel}: ${(t1-t0)} ms.`);
+        console.log(`Nodos expandidos minimax: ${conteoNodos}`);
+        break;
+      case 2: //alfaBeta
+        var nivel = parseInt($(`#limite${jugadorActual}`).text());
+        var t0 = performance.now();
+        jugarAlfaBeta(tablero, nivel, jugadorActual);
+        var t1 = performance.now();
+        console.log(`Tiempo alfa beta a nivel ${nivel}: ${(t1-t0)} ms.`);
+        console.log(`Nodos expandidos alfa beta: ${conteoNodos}`);
+        break;
+      case 3: //Aleatoria
+        var t0 = performance.now();
+        jugarAleatorio(tablero, jugadorActual);
+        var t1 = performance.now();
+        console.log(`Tiempo aleatorio: ${(t1-t0)} ms.`);
+        break;
+    }
+  }
+  else {
+    tablero.pass();
   }
   if(isGameOver(tablero)) {
     var puntaje1 = cantFichas(tablero, 1);
@@ -249,6 +251,8 @@ function juegoOponente(tablero) {
       console.log(`Empate`);
       $("#labeljugador").text(`Empate`);
     }
+  } else {
+    continuarJuego(tablero);
   }
 }
 //devuelve un array con las coordenadas [x, y] de los movimientos Posibles
