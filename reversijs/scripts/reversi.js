@@ -16,7 +16,7 @@ var ponderaciones = [
      20,  -5,  15,   3,   3,  15,  -5,  20,
       5,  -5,   3,   3,   3,   3,  -5,   5,
       5,  -5,   3,   3,   3,   3,  -5,   5,
-     20,  -5,  15,   3,   3,  15,  -5,  20
+     20,  -5,  15,   3,   3,  15,  -5,  20,
     -20, -40,  -5,  -5,  -5,  -5, -40, -20,
     120, -20,  20,   5,   5,  20, -20, 120,
 ];
@@ -39,9 +39,11 @@ function coords(cell) {
   return [parseInt(cell.id.substr(1,1)), parseInt(cell.id.substr(2,1))];
 }
 
+
 function minimax(tablero, profundidad, esJugadorIA, jugadorIA) {
   if(profundidad === 0 || isGameOver(tablero)) {
-    return evaluar(tablero, jugadorIA);
+    var valor = evaluar(tablero, jugadorIA);
+    return valor;
   }
   var color = jugadorIA === 1 ? -1 : 1;
   var contrario = jugadorIA === 1 ? 2 : 1;
@@ -50,9 +52,9 @@ function minimax(tablero, profundidad, esJugadorIA, jugadorIA) {
     //tablero.whosemove = color;
     var movimientos = posiblesMovimientos(tablero, jugadorIA);
     for(var i=0; i < movimientos.length; i++) {
-      var hijo = new board(tablero);
+      var hijo = $.extend(true, {}, tablero);
       var result = colocarFicha(hijo, movimientos[i]);
-      if(!result) console.log("movimiento invalidado en minimax profundidad: " + profundidad);
+      if(!result) { console.log("movimiento invalidado en minimax profundidad: " + profundidad); }
       conteoNodos++;
       var val = minimax(hijo, profundidad - 1, false, jugadorIA);
       mejorValor = Math.max(mejorValor, val);
@@ -62,9 +64,9 @@ function minimax(tablero, profundidad, esJugadorIA, jugadorIA) {
     var mejorValor = Number.POSITIVE_INFINITY;
     var movimientos = posiblesMovimientos(tablero, contrario);
     for(var i=0; i < movimientos.length; i++) {
-      var hijo = new board(tablero);
+      var hijo = $.extend(true, {}, tablero);
       var result = colocarFicha(hijo, movimientos[i]);
-      if(!result) console.log("movimiento invalidado en minimax profundidad: " + profundidad)
+      if(!result) { console.log("movimiento invalidado en minimax profundidad: " + profundidad); }
       conteoNodos++;
       var val = minimax(hijo, profundidad - 1, true, jugadorIA);
       mejorValor = Math.min(mejorValor, val);
@@ -80,9 +82,9 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
   conteoNodos = 0;
   if(movimientos.length > 0) {
     for(var i = 0; i<movimientos.length; i++) {
-      var hijo = new board(tablero);
+      var hijo = $.extend(true, {}, tablero);
       var result = colocarFicha(hijo, movimientos[i]);
-      if(!result) console.log("Movimiento no valido en minimax");
+      if(!result) { console.log("Movimiento no valido en jugarMinimax"); }
       conteoNodos++;
       var val = minimax(hijo, nivel-1, false, jugadorIA);
       if(val > mejorValor) {
@@ -95,10 +97,6 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
       drawall(tablero);
       $("#puntaje1").text(cantFichas(tablero, 1));
       $("#puntaje2").text(cantFichas(tablero, 2));
-      console.log(`Jugador ${jugadorActual}: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`)
-    }
-    else {
-      console.log(`Movimiento invalido: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`);
     }
   } else {
     console.log("Sin movimientos posibles.");
@@ -115,9 +113,9 @@ function alfaBeta(tablero, profundidad, alfa, beta, esJugadorIA, jugadorIA) {
     var mejorValor = Number.NEGATIVE_INFINITY;
     var movimientos = posiblesMovimientos(tablero, jugadorIA);
     for(var i=0; i < movimientos.length; i++) {
-      var hijo = new board(tablero);
+      var hijo = $.extend(true, {}, tablero);
       var result = colocarFicha(hijo, movimientos[i]);
-      if(!result) console.log("movimiento invalidado en minimax profundidad: " + profundidad);
+      if(!result) { console.log("movimiento invalidado en minimax profundidad: " + profundidad); }
       conteoNodos++;
       var val = alfaBeta(hijo, profundidad - 1, alfa, beta, false, jugadorIA);
       mejorValor = Math.max(mejorValor, val);
@@ -131,9 +129,9 @@ function alfaBeta(tablero, profundidad, alfa, beta, esJugadorIA, jugadorIA) {
     var mejorValor = Number.POSITIVE_INFINITY;
     var movimientos = posiblesMovimientos(tablero, contrario);
     for(var i=0; i < movimientos.length; i++) {
-      var hijo = new board(tablero);
+      var hijo = $.extend(true, {}, tablero);
       var result = colocarFicha(hijo, movimientos[i]);
-      if(!result) console.log("movimiento invalidado en minimax profundidad: " + profundidad);
+      if(!result) { console.log("movimiento invalidado en minimax profundidad: " + profundidad); }
       conteoNodos++;
       var val = alfaBeta(hijo, profundidad - 1, alfa, beta, true, jugadorIA);
       mejorValor = Math.min(mejorValor, val);
@@ -155,8 +153,9 @@ function jugarAlfaBeta(tablero, nivel, jugadorIA) {
   conteoNodos = 0;
   if(movimientos.length > 0) {
     for(var i = 0; i<movimientos.length; i++) {
-      var hijo = new board(tablero);
-      colocarFicha(hijo, movimientos[i]);
+      var hijo = $.extend(true, {}, tablero);
+      var result = colocarFicha(hijo, movimientos[i]);
+      if(!result) { console.log("Movimiento invalido en jugarAlfaBeta"); }
       conteoNodos++;
       var val = alfaBeta(hijo, nivel-1, alfa, beta, false, jugadorIA);
       if(val > mejorValor) {
@@ -225,6 +224,7 @@ function juegoOponente(tablero) {
       case 1: //Minimax
         var nivel = parseInt($(`#limite${jugadorActual}`).text());
         var t0 = performance.now();
+        console.log("minimax jugador actual: " + jugadorActual);
         jugarMinimax(tablero, nivel, jugadorActual);
         var t1 = performance.now();
         console.log(`Tiempo minimax a nivel ${nivel}: ${(t1-t0)} ms.`);
@@ -293,18 +293,16 @@ function evaluar(tablero, jugadorIA) {
   var totalJugIA = 0;
   var jugIA = jugadorIA === 1 ? -1 : 1;
   var jugContrario = (-1)*jugIA;
-
   for(var i=0; i<8; i++) {
     for(var j=0; j<8; j++) {
-      var casillaActual = tablero.state_vector[i + 8 * j];
+      var casillaActual = tablero.state_vector[i + (8 * j)];
       if(casillaActual === jugIA) {
-        totalJugIA += ponderaciones[i + 8 * j];
+        totalJugIA += ponderaciones[i + (8 * j)];
       } else if(casillaActual === jugContrario) {
-        totalJugContrario += ponderaciones[i + 8 *j];
+        totalJugContrario += ponderaciones[i + (8 * j)];
       }
     }
   }
-
   return totalJugIA - totalJugContrario;
 }
 
