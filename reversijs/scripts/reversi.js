@@ -97,6 +97,7 @@ function jugarMinimax(tablero, nivel, jugadorIA) {
       drawall(tablero);
       $("#puntaje1").text(cantFichas(tablero, 1));
       $("#puntaje2").text(cantFichas(tablero, 2));
+      console.log(`Jugador ${jugadorActual}: [${movimientos[indiceJugada][0]},${movimientos[indiceJugada][1]}]`)
     }
   } else {
     console.log("Sin movimientos posibles.");
@@ -309,7 +310,7 @@ function evaluar(tablero, jugadorIA) {
   }
   var porcIA = cantIA / (cantIA + cantContrario);
   var porcContrario = cantContrario / (cantIA + cantContrario);
-  
+
   return (porcIA * totalJugIA) - (porcContrario * totalJugContrario);
 }
 
